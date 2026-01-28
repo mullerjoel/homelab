@@ -13,8 +13,8 @@ services:
     volumes:
       - /home/joel/config/plex/config:/config
       - /home/joel/config/plex/transcode:/transcode
-      - /mnt/hdd01/movies:/movies
-      - /mnt/hdd01/private:/private
-      - /mnt/hdd01/tv:/tv
-      - /mnt/hdd01/sport:/sport
+      - /mnt/hdd01/movies:/movies:ro
+      - /mnt/hdd01/private:/private:ro
+      - /mnt/hdd01/tv:/tv:ro
+      - /mnt/hdd01/sport:/sport:ro
     restart: always
