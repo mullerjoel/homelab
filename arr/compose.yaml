@@ -6,6 +6,26 @@ x-common: &common
     TZ: Europe/Zurich
 
 services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - VERSION=docker
+    volumes:
+      - ${CONFIG}/plex/config:/config
+      - ${CONFIG}/plex/transcode:/transcode
+      - /mnt/hdd01/movies:/movies:ro
+      - /mnt/hdd01/private:/private:ro
+      - /mnt/hdd01/tv:/tv:ro
+      - /mnt/hdd01/sport:/sport:ro
+    restart: always
+
   gluetun:
     <<: *common
     image: qmcgaw/gluetun:latest
@@ -41,7 +61,7 @@ services:
       TORRENTING_PORT: 6881
     volumes:
       - ${CONFIG}/qbittorrent:/config
-      - /data/data:/data
+      - ${DATA_DIR}/data:/data
     depends_on:
       gluetun:
         condition: service_healthy
@@ -54,7 +74,7 @@ services:
       - 8989:8989
     volumes:
       - ${CONFIG}/sonarr:/config
-      - /data/data:/data
+      - ${DATA_DIR}/data:/data
 
   radarr:
     <<: *common
@@ -64,7 +84,7 @@ services:
       - 7878:7878
     volumes:
       - ${CONFIG}/radarr:/config
-      - /data/data:/data
+      - ${DATA_DIR}/data:/data
 
   prowlarr:
     <<: *common
@@ -83,16 +103,7 @@ services:
       - 6767:6767
     volumes:
       - ${CONFIG}/bazarr:/config
-      - /data/data:/data
-
-  jellyseerr:
-    <<: *common
-    container_name: jellyseerr
-    image: fallenbagel/jellyseerr:latest
-    ports:
-      - 5055:5055
-    volumes:
-      - ${CONFIG}/jellyseerr:/app/config
+      - ${DATA_DIR}/data:/data
 
   jellyfin:
     <<: *common
@@ -103,7 +114,7 @@ services:
       - /dev/dri:/dev/dri
     volumes:
       - ${CONFIG}/jellyfin:/config
-      - /data/data/media:/data/media
+      - ${DATA_DIR}/data/media:/data/media
 
   flaresolverr:
     <<: *common
