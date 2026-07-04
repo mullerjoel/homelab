@@ -1,0 +1,128 @@
+x-common: &common
+  restart: unless-stopped
+  environment: &common-env
+    PUID: 1000
+    PGID: 1000
+    TZ: Europe/Zurich
+
+services:
+  gluetun:
+    <<: *common
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      <<: *common-env
+      VPN_SERVICE_PROVIDER: nordvpn
+      VPN_TYPE: openvpn
+      OPENVPN_USER: ${VPN_USER}
+      OPENVPN_PASSWORD: ${VPN_PASS}
+      SERVER_COUNTRIES: Netherlands
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "https://ipinfo.io"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  qbittorrent:
+    <<: *common
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent:latest
+    network_mode: service:gluetun
+    environment:
+      <<: *common-env
+      WEBUI_PORT: 8080
+      TORRENTING_PORT: 6881
+    volumes:
+      - ${CONFIG}/qbittorrent:/config
+      - /data/data:/data
+    depends_on:
+      gluetun:
+        condition: service_healthy
+
+  sonarr:
+    <<: *common
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr:latest
+    ports:
+      - 8989:8989
+    volumes:
+      - ${CONFIG}/sonarr:/config
+      - /data/data:/data
+
+  radarr:
+    <<: *common
+    container_name: radarr
+    image: ghcr.io/hotio/radarr:latest
+    ports:
+      - 7878:7878
+    volumes:
+      - ${CONFIG}/radarr:/config
+      - /data/data:/data
+
+  prowlarr:
+    <<: *common
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr:latest
+    ports:
+      - 9696:9696
+    volumes:
+      - ${CONFIG}/prowlarr:/config
+
+  bazarr:
+    <<: *common
+    container_name: bazarr
+    image: ghcr.io/hotio/bazarr:latest
+    ports:
+      - 6767:6767
+    volumes:
+      - ${CONFIG}/bazarr:/config
+      - /data/data:/data
+
+  jellyseerr:
+    <<: *common
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
+    ports:
+      - 5055:5055
+    volumes:
+      - ${CONFIG}/jellyseerr:/app/config
+
+  jellyfin:
+    <<: *common
+    container_name: jellyfin
+    image: lscr.io/linuxserver/jellyfin:latest
+    network_mode: host
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ${CONFIG}/jellyfin:/config
+      - /data/data/media:/data/media
+
+  flaresolverr:
+    <<: *common
+    container_name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    ports:
+      - 8191:8191
+    environment:
+      <<: *common-env
+      LOG_LEVEL: info
+
+  recyclarr:
+    <<: *common
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
+    user: 1000:1000
+    volumes:
+      - ${CONFIG}/recyclarr:/config
+
+networks:
+  default:
+    name: arr_network
