@@ -116,6 +116,16 @@ services:
       - ${CONFIG}/jellyfin:/config
       - ${DATA_DIR}/data/media:/data/media
 
+  seerr:
+    <<: *common
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
+    ports:
+      - 5055:5055
+    volumes:
+      - ${CONFIG}/seerr:/app/config
+
   flaresolverr:
     <<: *common
     container_name: flaresolverr
