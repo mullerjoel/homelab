@@ -4,7 +4,38 @@ In this readme, I explain how I set up my arr stack. This is how I am currently 
 
 ## Services
 
-I have the following services in my arr stack:
+Following diagram shows an overview of the most important services and how they work together
+
+```mermaid
+flowchart LR
+    Seerr --> Radarr
+    Seerr --> Sonarr
+
+    Radarr --> qBittorrent
+    Sonarr --> qBittorrent
+
+    qBittorrent --> Gluetun
+
+    qBittorrent --> Torrents[(Torrents Storage)]
+    Radarr --> Torrents
+    Sonarr --> Torrents
+
+    Radarr --> Media[(Media Storage)]
+    Sonarr --> Media
+
+    Media --> Plex
+    Media --> Jellyfin
+
+    subgraph VPN
+        qBittorrent
+        Gluetun
+    end
+
+    subgraph Storage
+        Media
+        Torrents
+    end
+```
 
 * **plex**: for streaming the media
 * **jellyfin**: for streaming the media
