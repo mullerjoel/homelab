@@ -24,6 +24,8 @@ services:
       - /mnt/hdd01/private:/private:ro
       - /mnt/hdd01/tv:/tv:ro
       - /mnt/hdd01/sport:/sport:ro
+      - /mnt/hdd01/data/media/tv:/tv2:ro
+      - /mnt/hdd01/data/media/movies:/movies2:ro
     restart: always
 
   gluetun:
